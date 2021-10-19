@@ -7,9 +7,17 @@ use App\Models\Attachment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Exception;
+use App\Http\Requests\ArticleRequest;
 
 class ArticleController extends Controller
 {
+    public function __construct()
+    {
+        // アクションに合わせたpolicyのメソッドで認可されていないユーザーはエラーを投げる
+        $this->authorizeResource(Article::class, 'article');
+    }
+    
     /**
      * Display a listing of the resource.
      *
@@ -39,53 +47,43 @@ class ArticleController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'file' => 'required|file|image',
-            'caption' => 'required|max:255',
-            'info' => 'max:255'
-        ]);
 
-         // Articleのデータを用意
-        $article = new Article();
-        $article->fill($request->all());
+        $article = new Article($request->all());
 
-         // ユーザーIDを追加
-        $article->user_id = 1;
+        $article->user_id = $request->user()->id;
 
-         // ファイルの用意
-        $file = $request->file;
+        $file = $request->file('file');
 
-        // トランザクション開始
         DB::beginTransaction();
-
         try {
-             // Article保存
             $article->save();
 
-             // 画像ファイル保存
-            $path = Storage::putFile('articles', $file);
+            if (!$path = Storage::putFile('articles', $file)){
+            throw new Exception('ファイルの保存に失敗しました');
+            }
 
-             // Attachmentモデルの情報を用意
             $attachment = new Attachment([
                 'article_id' => $article->id,
                 'org_name' => $file->getClientOriginalName(),
                 'name' => basename($path)
             ]);
-             // Attachment保存
+
             $attachment->save();
-             // トランザクション終了(成功)
             DB::commit();
-
         } catch (\Exception $e) {
+            if (!empty($path)) {
+                Storage::delete($path);
+            }
 
-            // トランザクション終了(失敗)
             DB::rollback();
+            return back()
+                ->withErrors($e->getMessage());
 
             back()->withErrors(['error' => '保存に失敗しました']);
         }
-        return redirect(route('articles.index'))->with(['flash_message' => '登録が完了しました']);
 
-        
+        return redirect(route('articles.index'))
+            ->with(['flash_message' => '登録が完了しました']);
     }
 
     /**
@@ -117,29 +115,19 @@ class ArticleController extends Controller
      * @param  \App\Models\Article  $article
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Article $article)
+    public function update(ArticleRequest $request, Article $article)
     {
-         // バリデーション
-        $request->validate([
-            'caption' => 'required|max:255',
-            'info' => 'max:255'
-        ]);
-         // Articleのデータを更新
         $article->fill($request->all());
-         // トランザクション開始
-        DB::beginTransaction();
+
         try {
-             // Article保存
             $article->save();
-             // トランザクション終了(成功)
-            DB::commit();
         } catch (\Exception $e) {
-             // トランザクション終了(失敗)
-            DB::rollback();
-            back()->withErrors(['error' => '保存に失敗しました']);
+            return back()
+                ->withErrors($e->getMessage());
         }
-        return redirect(route('articles.index'))->with(['flash_message' => '更新が完了しました']);
-    
+        return redirect()
+            ->route('articles.index')
+            ->with(['flash_message' => '更新が完了しました']);
     }
 
     /**
@@ -150,15 +138,20 @@ class ArticleController extends Controller
      */
     public function destroy(Article $article)
     {
+        $path = $article->image_path;
         DB::beginTransaction();
         try {
-            // 削除処理
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()
-                ->withErrors($e->getMessage());
-        }
+            $article->delete();
+            $article->attachment->delete();
+            if(!Storage::delete($path)){
+                throw new Exception('ファイルの削除に失敗しました');
+            }
+        DB::commit();
+    } catch (\Exception $e) {
+        DB::rollback();
+        return back()
+            ->withErrors($e->getMessage());
+    }
         return redirect()
             ->route('articles.index')
             ->with(['flash_message' => '削除しました']);
