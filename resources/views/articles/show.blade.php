@@ -11,7 +11,7 @@
                         <div class="col-6">
                             {{ $article->title }}
                             @foreach ($article->attachments as $attachment)
-                                <img src="{{ Storage::url('articles/' . $attachment->name)}}" width="100%">
+                                <img src="{{ Storage::url('articles/' . $attachment->name) }}" width="100%">
                             @endforeach
                         </div>
                         <div class="col-6">

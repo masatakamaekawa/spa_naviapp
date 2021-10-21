@@ -4,7 +4,7 @@
     @include('partial.flash')
     @include('partial.errors')
     <section class="row position-relative" data-masonry='{ "percentPosition": true }'>
-            @foreach ($articles as $article)
+        @foreach ($articles as $article)
             <div class="mb-4">
                 <article class="card position-relative">
                     <div class="card-img-top">
@@ -14,8 +14,8 @@
                                 {{ $article->caption }}
                             </a>
                         </div>
-                    </article>
-        </div>
+                </article>
+            </div>
         @endforeach
     </section>
     <a href="{{ route('articles.create') }}" class="position-fixed fs-1 bottom-right-30 zindex-sticky">
