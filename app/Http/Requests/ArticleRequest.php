@@ -23,6 +23,8 @@ class ArticleRequest extends FormRequest
      */
     public function rules()
     {
+        $route = $this->route()->getName();
+
         $rule = [
             'caption' => 'required|string|max:255',
             'info' => 'max:255'

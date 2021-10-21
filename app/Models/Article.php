@@ -15,19 +15,26 @@ class Article extends Model
         'info',
     ];
 
-    public function attachment()
+    public function attachments()
     {
-        return $this->hasOne(Attachment::class);
+        return $this->hasMany(Attachment::class);
     }
+
     public function getImagePathAttribute()
     {
-        return 'articles/' . $this->attachment->name;
+        $paths =[];
+        foreach ($this->attachments as $attachment) {
+            $paths[] = 'articles/' . $attachment->name;
+        }
+        return $paths;
     }
     public function getImageUrlAttribute()
     {
-        if (config('filesystems.default') == 'gcs'){
-            return Storage::temporaryUrl($this->image_path, now()->addMinutes(5));
-        } 
-        return Storage::url($this->image_path);
+        $urls = [];
+
+        foreach($this->image_path as $path){
+            $urls[] =Storage::url($path);
+        }
+        return $urls;
     }
 }

@@ -47,30 +47,39 @@ class ArticleController extends Controller
      */
     public function store(Request $request)
     {
-
-        $article = new Article($request->all());
-
+        $article = new Article();
+        $article->fill($request->all());
+        
         $article->user_id = $request->user()->id;
-
-        $file = $request->file('file');
+        
+        $files = $request->file;
 
         DB::beginTransaction();
+        
         try {
             $article->save();
+            
+            $paths = [];
 
-            if (!$path = Storage::putFile('articles', $file)){
-            throw new Exception('ファイルの保存に失敗しました');
-            }
+            foreach($files as $file){
+                
+                if (!$path = Storage::putFile('articles', $file)){
+                    throw new Exception('ファイルの保存に失敗しました');
+                }
+                $paths[] = $path;
 
-            $attachment = new Attachment([
+                
+                $attachment = new Attachment([
                 'article_id' => $article->id,
                 'org_name' => $file->getClientOriginalName(),
-                'name' => basename($path)
+                'attachment' => basename($path)
             ]);
 
             $attachment->save();
+        }
             DB::commit();
-        } catch (\Exception $e) {
+        
+        }catch (\Exception $e) {
             if (!empty($path)) {
                 Storage::delete($path);
             }

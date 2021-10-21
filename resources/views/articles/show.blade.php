@@ -9,7 +9,11 @@
                 <figure class="m-3">
                     <div class="row">
                         <div class="col-6">
-                            <img src="{{ $article->image_url }}" width="100%">
+                            {{ $article->title }}
+                            {{-- {{ $article->category->file_name }} --}}
+                            @foreach ($article->image_urls as $url)
+                                <img src="{{ $image_url }}" width="100%">
+                            @endforeach
                         </div>
                         <div class="col-6">
                             <figcaption>
@@ -24,21 +28,22 @@
                     </div>
                 </figure>
                 @can('update', $article)
-                <a href="{{ route('articles.edit', $article) }}">
-                    <i class="fas fa-edit position-absolute top-0 end-0 fs-1"></i>
-                </a>
+                    <a href="{{ route('articles.edit', $article) }}">
+                        <i class="fas fa-edit position-absolute top-0 end-0 fs-1"></i>
+                    </a>
                 @endcan
         </article>
         <div class="d-grid gap-3 col-6 mx-auto">
             @can('delete', $article)
-            <form action="{{ route('articles.destroy', $article) }}" method="post" id="form">
-                @csrf
-                @method('DELETE')
-            </form>
-            <input form="form" type="submit" value="削除" onclick="if(!confirm('削除していいですか')){return false}"
-                class="btn btn-danger btn-lg">
+                <form action="{{ route('articles.destroy', $article) }}" method="post" id="form">
+                    @csrf
+                    @method('DELETE')
+                </form>
+                <input form="form" type="submit" value="削除" onclick="if(!confirm('削除していいですか')){return false}"
+                    class="btn btn-danger btn-lg">
             @endcan
             <a href="{{ route('articles.index') }}" class="btn btn-secondary btn-lg">戻る</a>
         </div>
+
     </section>
 @endsection

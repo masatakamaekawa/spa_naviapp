@@ -5,6 +5,7 @@
     @include('partial.errors')
     <section class="row position-relative" data-masonry='{ "percentPosition": true }'>
         @foreach ($articles as $article)
+        {{--  {{ dd($article->attachments) }}--}}
             <div class="col-6 col-md-4 col-lg-3 col-sl-2 mb-4">
                 <article class="card position-relative">
                     <article class="card">
