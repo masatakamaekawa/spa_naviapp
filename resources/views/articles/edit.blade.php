@@ -6,7 +6,8 @@
             <figure class="m-3">
                 <div class="row">
                     <div class="col-6">
-                        <img src="{{ $article->image_url }}" width=" 100%">
+                        {{-- {{ dd($article->image_url) }} --}}
+                        <img src="{{ $article->image_urls }}" alt="" width=" 100%">
                     </div>
                     <div class="col-6">
                         <figcaption>

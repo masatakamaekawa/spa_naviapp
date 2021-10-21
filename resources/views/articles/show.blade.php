@@ -10,9 +10,8 @@
                     <div class="row">
                         <div class="col-6">
                             {{ $article->title }}
-                            {{-- {{ $article->category->file_name }} --}}
-                            @foreach ($article->image_urls as $url)
-                                <img src="{{ $image_url }}" width="100%">
+                            @foreach ($article->attachments as $attachment)
+                                <img src="{{ Storage::url('articles/' . $attachment->name)}}" width="100%">
                             @endforeach
                         </div>
                         <div class="col-6">
@@ -44,6 +43,5 @@
             @endcan
             <a href="{{ route('articles.index') }}" class="btn btn-secondary btn-lg">戻る</a>
         </div>
-
     </section>
 @endsection

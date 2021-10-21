@@ -32,7 +32,7 @@ class ArticleRequest extends FormRequest
 
         $route = $this->route()->getName();
         if($route === 'articles.store'){
-            $rule['file'] = 'required|file|image';
+            $rule['file'] = 'required|file|attachment';
         }
         return $rule;
     }

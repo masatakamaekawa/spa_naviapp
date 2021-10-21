@@ -26,6 +26,8 @@ class ArticleController extends Controller
     public function index()
     {
         $articles = Article::all();
+        $articles = Article::with('attachments')->latest()->Paginate(10);
+        
         return view('articles.index', compact('articles'));
     }
 

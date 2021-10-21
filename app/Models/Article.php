@@ -28,6 +28,7 @@ class Article extends Model
         }
         return $paths;
     }
+
     public function getImageUrlAttribute()
     {
         $urls = [];
