@@ -4,13 +4,11 @@
     @include('partial.flash')
     @include('partial.errors')
     <section class="row position-relative" data-masonry='{ "percentPosition": true }'>
-        {{-- {{ dd($article->attachments) }} --}}
-        <div class="col-6 col-md-4 col-lg-3 col-sl-2 mb-4">
             @foreach ($articles as $article)
-
+            <div class="mb-4">
                 <article class="card position-relative">
-                    <article class="card">
-                        <img src="{{ Storage::url('articles/' . $article->attachments[0]->name) }}" width="50%">
+                    <div class="card-img-top">
+                        <img src="{{ Storage::url('articles/' . $article->attachments[0]->name) }}" width="100%">
                         <div class="card-title mx-3">
                             <a href="{{ route('articles.show', $article) }}" class="text-decoration-none stretched-link">
                                 {{ $article->caption }}

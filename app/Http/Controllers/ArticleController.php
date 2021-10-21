@@ -14,7 +14,6 @@ class ArticleController extends Controller
 {
     public function __construct()
     {
-        // アクションに合わせたpolicyのメソッドで認可されていないユーザーはエラーを投げる
         $this->authorizeResource(Article::class, 'article');
     }
     
@@ -27,7 +26,7 @@ class ArticleController extends Controller
     {
         $articles = Article::all();
         $articles = Article::with('attachments')->latest()->Paginate(10);
-        
+
         return view('articles.index', compact('articles'));
     }
 
@@ -47,8 +46,15 @@ class ArticleController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(ArticleRequest $request)
     {
+
+        // $request->validate([
+        //     'file' => 'required|file|attachment',
+        //     'caption' => 'required|max:255',
+        //     'info' => 'max:255'
+        // ]);
+        
         $article = new Article();
         $article->fill($request->all());
         
@@ -57,7 +63,6 @@ class ArticleController extends Controller
         $files = $request->file;
 
         DB::beginTransaction();
-        
         try {
             $article->save();
             
@@ -74,10 +79,10 @@ class ArticleController extends Controller
                 $attachment = new Attachment([
                 'article_id' => $article->id,
                 'org_name' => $file->getClientOriginalName(),
-                'attachment' => basename($path)
+                'name' => basename($path)
             ]);
-
             $attachment->save();
+
         }
             DB::commit();
         
@@ -128,17 +133,23 @@ class ArticleController extends Controller
      */
     public function update(ArticleRequest $request, Article $article)
     {
+        $request->validate([
+            'caption' => 'required|max:255',
+            'info' => 'max:255'
+        ]);
         $article->fill($request->all());
-
+        
+        DB::beginTransaction();
         try {
             $article->save();
+            
+            DB::commit();
         } catch (\Exception $e) {
-            return back()
-                ->withErrors($e->getMessage());
+            
+            DB::rollback();
+            back()->withErrors(['error' => '保存に失敗しました']);
         }
-        return redirect()
-            ->route('articles.index')
-            ->with(['flash_message' => '更新が完了しました']);
+        return redirect(route('articles.index'))->with(['flash_message' => '更新が完了しました']);
     }
 
     /**
@@ -149,20 +160,12 @@ class ArticleController extends Controller
      */
     public function destroy(Article $article)
     {
-        $path = $article->image_path;
-        DB::beginTransaction();
-        try {
-            $article->delete();
-            $article->attachment->delete();
-            if(!Storage::delete($path)){
-                throw new Exception('ファイルの削除に失敗しました');
-            }
-        DB::commit();
-    } catch (\Exception $e) {
-        DB::rollback();
-        return back()
-            ->withErrors($e->getMessage());
-    }
+        $attachments = $article->attachments;
+        $article->delete();
+
+        foreach ($attachments as $attachment) {
+            Storage::delete('articles/' . $attachment->name);
+        }
         return redirect()
             ->route('articles.index')
             ->with(['flash_message' => '削除しました']);
