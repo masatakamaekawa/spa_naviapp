@@ -138,8 +138,13 @@ class ArticleController extends Controller
         ]);
         $article->fill($request->all());
         
+        try {
             $article->save();
-            
+        } catch (\Exception $e) {
+            return back()
+                ->withErrors($e->getMessage());
+        }
+        
         return redirect(route('articles.index'))->with(['flash_message' => '更新が完了しました']);
     }
 
