@@ -10,16 +10,32 @@ class Article extends Model
 {
     use HasFactory;
 
-    public function attachment()
+    protected $fillable = [
+        'caption',
+        'info',
+    ];
+
+    public function attachments()
     {
-        return $this->hasOne(Attachment::class);
+        return $this->hasMany(Attachment::class);
     }
+
     public function getImagePathAttribute()
     {
-        return 'articles/' . $this->attachment->name;
+        $paths =[];
+        foreach ($this->attachments as $attachment) {
+            $paths[] = 'articles/' . $attachment->name;
+        }
+        return $paths;
     }
+
     public function getImageUrlAttribute()
     {
-        return Storage::url($this->image_path);
+        $urls = [];
+
+        foreach($this->image_path as $path){
+            $urls[] =Storage::url($path);
+        }
+        return $urls;
     }
 }
