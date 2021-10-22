@@ -138,15 +138,6 @@ class ArticleController extends Controller
         ]);
         $article->fill($request->all());
         
-        try {
-            $article->save();
-            
-            DB::commit();
-        } catch (\Exception $e) {
-            
-            DB::rollback();
-            back()->withErrors(['error' => '保存に失敗しました']);
-        }
         return redirect(route('articles.index'))->with(['flash_message' => '更新が完了しました']);
     }
 
