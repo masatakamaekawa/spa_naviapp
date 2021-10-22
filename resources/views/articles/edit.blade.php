@@ -7,9 +7,8 @@
                 <div class="row">
                     <div class="col-6">
                         @foreach ($article->image_url as $image_url)
-                             <img src="{{ $image_url }}" alt="" width=" 100%">
+                            <img src="{{ $image_url }}" alt="" width=" 100%">
                         @endforeach
-                       
                     </div>
                     <div class="col-6">
                         <figcaption>
