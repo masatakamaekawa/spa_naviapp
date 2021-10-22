@@ -25,7 +25,6 @@ class ArticleController extends Controller
     public function index()
     {
         $articles = Article::all();
-        $articles = Article::with('attachments')->latest()->Paginate(10);
 
         return view('articles.index', compact('articles'));
     }
@@ -87,8 +86,8 @@ class ArticleController extends Controller
             DB::commit();
         
         }catch (\Exception $e) {
-            if (!empty($path)) {
-                Storage::delete($path);
+            if (!empty($paths)) {
+                Storage::delete($paths);
             }
 
             DB::rollback();
@@ -139,7 +138,6 @@ class ArticleController extends Controller
         ]);
         $article->fill($request->all());
         
-        DB::beginTransaction();
         try {
             $article->save();
             
